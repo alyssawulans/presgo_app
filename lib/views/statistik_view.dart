@@ -3,15 +3,18 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:presgo_app/models/attendance_model.dart';
+import 'package:presgo_app/services/api_service.dart';
 
 class StatistikView extends StatefulWidget {
   final List<AttendanceModel> history;
   final DateTime? selectedMonth;
+  final bool isTab;
 
   const StatistikView({
     super.key,
-    required this.history,
+    this.history = const [],
     this.selectedMonth,
+    this.isTab = true,
   });
 
   @override
@@ -22,6 +25,15 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
   late AnimationController _animController;
   late Animation<double> _animRing;
 
+  List<AttendanceModel> _history = [];
+  DateTime? _selectedMonth;
+  bool _isLoading = true;
+
+  final List<DateTime> _monthOptions = List.generate(12, (index) {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month - index, 1);
+  });
+
   @override
   void initState() {
     super.initState();
@@ -30,7 +42,11 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
       duration: const Duration(milliseconds: 1200),
     );
     _animRing = CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic);
-    _animController.forward();
+    
+    _selectedMonth = widget.selectedMonth ?? DateTime(DateTime.now().year, DateTime.now().month, 1);
+    _history = widget.history;
+    
+    _fetchStats();
   }
 
   @override
@@ -39,12 +55,45 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
     super.dispose();
   }
 
+  Future<void> _fetchStats() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+    try {
+      String? start;
+      String? end;
+      if (_selectedMonth != null) {
+        start = DateFormat('yyyy-MM-dd').format(DateTime(_selectedMonth!.year, _selectedMonth!.month, 1));
+        end = DateFormat('yyyy-MM-dd').format(DateTime(_selectedMonth!.year, _selectedMonth!.month + 1, 0));
+      }
+      final list = await ApiService.instance.getHistory(start: start, end: end);
+      if (mounted) {
+        setState(() {
+          _history = list;
+          _isLoading = false;
+        });
+        _animController.reset();
+        _animController.forward();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memuat statistik: ${e.toString()}'),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
   // ── Compute stats ──────────────────────────────────────────────────────────
   int get _totalWorkDays => 24;
 
   int get _hadirCount {
     int count = 0;
-    for (final item in widget.history) {
+    for (final item in _history) {
       if (item.status != 'izin' && item.checkInTime != null) count++;
     }
     return count;
@@ -52,7 +101,7 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
 
   int get _terlambatCount {
     int count = 0;
-    for (final item in widget.history) {
+    for (final item in _history) {
       if (item.status != 'izin' && item.checkInTime != null) {
         try {
           final parts = item.checkInTime!.split(':');
@@ -74,7 +123,7 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
 
   int get _izinCount {
     int count = 0;
-    for (final item in widget.history) {
+    for (final item in _history) {
       if (item.status == 'izin') count++;
     }
     return count;
@@ -91,8 +140,8 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
     final Color textColor = isDark ? Colors.white : const Color(0xFF0F172A);
     final Color subText = isDark ? const Color(0xFF90A3BF) : const Color(0xFF64748B);
 
-    final monthLabel = widget.selectedMonth != null
-        ? DateFormat('MMMM yyyy', 'id_ID').format(widget.selectedMonth!)
+    final monthLabel = _selectedMonth != null
+        ? DateFormat('MMMM yyyy', 'id_ID').format(_selectedMonth!)
         : 'Semua';
 
     return Scaffold(
@@ -105,10 +154,11 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
               padding: const EdgeInsets.fromLTRB(8, 12, 16, 8),
               child: Row(
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor, size: 20),
-                    onPressed: () => Navigator.pop(context),
-                  ),
+                  if (!widget.isTab)
+                    IconButton(
+                      icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor, size: 20),
+                      onPressed: () => Navigator.pop(context),
+                    ),
                   Expanded(
                     child: Text(
                       'Statistik Absensi',
@@ -120,42 +170,48 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
                       ),
                     ),
                   ),
-                  // Placeholder so title stays centered
-                  const SizedBox(width: 40, height: 40),
+                  // Refresh statistics button
+                  IconButton(
+                    icon: Icon(Icons.refresh_rounded, color: const Color(0xFF2E66FF), size: 22),
+                    onPressed: _fetchStats,
+                  ),
                 ],
               ),
             ),
 
-            // ── Month label ──
+            // ── Month label filter ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: cardBg,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: isDark
-                          ? const Color(0xFF2E66FF).withValues(alpha: 0.3)
-                          : Colors.grey.withValues(alpha: 0.2),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        monthLabel,
-                        style: TextStyle(
-                          color: textColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
+                child: GestureDetector(
+                  onTap: () => _showMonthPicker(context, isDark, textColor, subText),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: cardBg,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF2E66FF).withOpacity(0.3)
+                            : Colors.grey.withOpacity(0.2),
                       ),
-                      const SizedBox(width: 4),
-                      Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: subText),
-                    ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          monthLabel,
+                          style: TextStyle(
+                            color: textColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: subText),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -164,34 +220,40 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
             const SizedBox(height: 16),
 
             Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── 4 Stat Cards ──
-                    _buildStatCards(isDark, cardBg, textColor, subText),
+              child: _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF2E66FF),
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // ── 4 Stat Cards ──
+                          _buildStatCards(isDark, cardBg, textColor, subText),
 
-                    const SizedBox(height: 24),
+                          const SizedBox(height: 24),
 
-                    // ── Donut + Rate ──
-                    _buildAttendanceRate(isDark, cardBg, textColor, subText),
+                          // ── Donut + Rate ──
+                          _buildAttendanceRate(isDark, cardBg, textColor, subText),
 
-                    const SizedBox(height: 24),
+                          const SizedBox(height: 24),
 
-                    // ── Trend Chart ──
-                    _buildTrendChart(isDark, cardBg, textColor, subText),
+                          // ── Trend Chart ──
+                          _buildTrendChart(isDark, cardBg, textColor, subText),
 
-                    const SizedBox(height: 24),
+                          const SizedBox(height: 24),
 
-                    // ── Rincian Kehadiran ──
-                    _buildRincian(isDark, cardBg, textColor, subText),
+                          // ── Rincian Kehadiran ──
+                          _buildRincian(isDark, cardBg, textColor, subText),
 
-                    const SizedBox(height: 32),
-                  ],
-                ),
-              ),
+                          const SizedBox(height: 32),
+                        ],
+                      ),
+                    ),
             ),
           ],
         ),
@@ -202,10 +264,10 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
   // ── 4 stat cards ────────────────────────────────────────────────────────────
   Widget _buildStatCards(bool isDark, Color cardBg, Color textColor, Color subText) {
     final stats = [
-      {'label': 'Total Hari\nKerja', 'value': '$_totalWorkDays', 'color': const Color(0xFF2E66FF)},
+      {'label': 'Hari Kerja', 'value': '$_totalWorkDays', 'color': const Color(0xFF2E66FF)},
       {'label': 'Hadir', 'value': '$_hadirCount', 'color': const Color(0xFF10B981)},
-      {'label': 'Terlambat', 'value': '$_terlambatCount', 'color': const Color(0xFFEF4444)},
-      {'label': 'Alpha', 'value': '$_alphaCount', 'color': const Color(0xFFF59E0B)},
+      {'label': 'Terlambat', 'value': '$_terlambatCount', 'color': const Color(0xFFF59E0B)},
+      {'label': 'Alpha', 'value': '$_alphaCount', 'color': const Color(0xFFEF4444)},
     ];
 
     return Row(
@@ -213,19 +275,19 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
         final color = s['color'] as Color;
         return Expanded(
           child: Container(
-            margin: const EdgeInsets.only(right: 8),
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
+            margin: const EdgeInsets.only(right: 6),
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
             decoration: BoxDecoration(
               color: cardBg,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: color.withValues(alpha: 0.2)),
+              border: Border.all(color: color.withOpacity(0.15)),
             ),
             child: Column(
               children: [
                 Text(
                   s['value'] as String,
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: 20,
                     fontWeight: FontWeight.w900,
                     color: color,
                   ),
@@ -256,6 +318,9 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
       decoration: BoxDecoration(
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? const Color(0xFF2E66FF).withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+        ),
       ),
       child: Row(
         children: [
@@ -263,8 +328,8 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
             animation: _animRing,
             builder: (_, __) {
               return SizedBox(
-                width: 110,
-                height: 110,
+                width: 100,
+                height: 100,
                 child: CustomPaint(
                   painter: _DonutPainter(
                     progress: _animRing.value * _attendanceRate,
@@ -281,36 +346,47 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
             },
           ),
           const SizedBox(width: 24),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '$percent%',
-                style: TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.w900,
-                  color: textColor,
-                  letterSpacing: -1,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$percent%',
+                  style: TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w900,
+                    color: textColor,
+                    letterSpacing: -1,
+                  ),
                 ),
-              ),
-              Text(
-                'Tingkat\nKehadiran',
-                style: TextStyle(
-                  color: subText,
-                  fontSize: 13,
-                  height: 1.4,
+                const SizedBox(height: 4),
+                Text(
+                  'Tingkat Kehadiran',
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 2),
+                Text(
+                  'Presentasi kehadiran Anda dihitung berdasarkan jumlah hari masuk kerja aktif.',
+                  style: TextStyle(
+                    color: subText,
+                    fontSize: 11,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  // ── Trend line chart (last 6 weeks stub) ────────────────────────────────────
+  // ── Trend line chart ────────────────────────────────────────────────────────
   Widget _buildTrendChart(bool isDark, Color cardBg, Color textColor, Color subText) {
-    // Generate weekly data from history (simplified)
     final List<double> weeklyData = _computeWeeklyTrend();
 
     return Container(
@@ -318,6 +394,9 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
       decoration: BoxDecoration(
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? const Color(0xFF2E66FF).withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -338,8 +417,8 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
                 data: weeklyData,
                 lineColor: const Color(0xFF2E66FF),
                 gridColor: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.grey.withValues(alpha: 0.1),
+                    ? Colors.white.withOpacity(0.05)
+                    : Colors.grey.withOpacity(0.1),
                 labelColor: subText,
               ),
               child: Container(),
@@ -351,7 +430,6 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
   }
 
   List<double> _computeWeeklyTrend() {
-    // Build 6-week attendance rate (simple approximation)
     final now = DateTime.now();
     final List<double> result = [];
     for (int week = 5; week >= 0; week--) {
@@ -359,7 +437,7 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
       final weekEnd = weekStart.add(const Duration(days: 4));
       int hadirInWeek = 0;
       int totalInWeek = 5; // Mon–Fri
-      for (final item in widget.history) {
+      for (final item in _history) {
         final d = DateTime.tryParse(item.attendanceDate ?? '');
         if (d != null &&
             !d.isBefore(weekStart) &&
@@ -399,7 +477,7 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
         'label': 'Cuti / Izin',
         'count': _izinCount,
         'percent': (_izinCount / _totalWorkDays * 100).round(),
-        'color': const Color(0xFF3B82F6),
+        'color': const Color(0xFF8F30FF),
       },
     ];
 
@@ -408,6 +486,9 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
       decoration: BoxDecoration(
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? const Color(0xFF2E66FF).withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,14 +509,12 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
               padding: const EdgeInsets.only(bottom: 14),
               child: Row(
                 children: [
-                  // Colored dot
                   Container(
                     width: 10,
                     height: 10,
                     decoration: BoxDecoration(color: color, shape: BoxShape.circle),
                   ),
                   const SizedBox(width: 10),
-                  // Label
                   SizedBox(
                     width: 80,
                     child: Text(
@@ -443,14 +522,13 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
                       style: TextStyle(color: textColor, fontSize: 13),
                     ),
                   ),
-                  // Bar
                   Expanded(
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
                         value: pct / 100,
                         backgroundColor: isDark
-                            ? Colors.white.withValues(alpha: 0.06)
+                            ? Colors.white.withOpacity(0.06)
                             : Colors.grey.shade200,
                         valueColor: AlwaysStoppedAnimation(color),
                         minHeight: 6,
@@ -458,7 +536,6 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
                     ),
                   ),
                   const SizedBox(width: 10),
-                  // Count & percent
                   Text(
                     '${item['count']} ($pct%)',
                     style: TextStyle(
@@ -473,6 +550,79 @@ class _StatistikViewState extends State<StatistikView> with SingleTickerProvider
           }),
         ],
       ),
+    );
+  }
+
+  void _showMonthPicker(
+    BuildContext context,
+    bool isDark,
+    Color textColor,
+    Color subText,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? const Color(0xFF131738) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: subText.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Pilih Bulan',
+              style: TextStyle(
+                color: textColor,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                physics: const BouncingScrollPhysics(),
+                children: _monthOptions.map((dt) {
+                  final label = DateFormat('MMMM yyyy', 'id_ID').format(dt);
+                  final isSelected =
+                      _selectedMonth?.year == dt.year &&
+                      _selectedMonth?.month == dt.month;
+                  return ListTile(
+                    title: Text(
+                      label,
+                      style: TextStyle(
+                        color: isSelected ? const Color(0xFF2E66FF) : textColor,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                    trailing: isSelected
+                        ? const Icon(Icons.check_rounded, color: Color(0xFF2E66FF))
+                        : null,
+                    onTap: () {
+                      setState(() => _selectedMonth = dt);
+                      Navigator.pop(context);
+                      _fetchStats();
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        );
+      },
     );
   }
 }
@@ -593,7 +743,7 @@ class _LineTrendPainter extends CustomPainter {
       fillPath,
       Paint()
         ..shader = LinearGradient(
-          colors: [lineColor.withValues(alpha: 0.25), lineColor.withValues(alpha: 0)],
+          colors: [lineColor.withOpacity(0.25), lineColor.withOpacity(0)],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ).createShader(Rect.fromLTWH(0, 0, w, h)),

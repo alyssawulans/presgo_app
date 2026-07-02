@@ -9,8 +9,8 @@ environment:
 
 dependencies:
   cupertino_icons: ^1.0.8
+  curved_navigation_bar: ^1.0.6
   dio: ^5.9.2
-  floating_bottom_bar: ^0.0.4
   flutter:
     sdk: flutter
   flutter_secure_storage: ^10.3.1

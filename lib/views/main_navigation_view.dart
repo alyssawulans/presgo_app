@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:presgo_app/models/user_model.dart';
 import 'package:presgo_app/services/api_service.dart';
 import 'package:presgo_app/views/home_tab.dart';
 import 'package:presgo_app/views/history_tab.dart';
-import 'package:presgo_app/views/map_tab.dart';
+import 'package:presgo_app/views/izin_view.dart';
+import 'package:presgo_app/views/statistik_view.dart';
 import 'package:presgo_app/views/profile_tab.dart';
-import 'package:presgo_app/views/settings_tab.dart';
 
 class MainNavigationView extends StatefulWidget {
   const MainNavigationView({super.key});
@@ -51,9 +52,8 @@ class _MainNavigationViewState extends State<MainNavigationView> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final Color bgColor = isDark ? const Color(0xFF080C24) : const Color(0xFFF4F7FC);
-    final Color navBgColor = isDark ? const Color(0xFF0A0E2A) : Colors.white;
+    final Color navBgColor = isDark ? const Color(0xFF131738) : Colors.white;
     final Color unselectedColor = isDark ? const Color(0xFF90A3BF) : const Color(0xFF64748B);
-    final Color borderColor = isDark ? const Color(0xFF2E66FF).withOpacity(0.15) : Colors.grey.withOpacity(0.2);
 
     if (_isLoadingUser) {
       return Scaffold(
@@ -74,12 +74,21 @@ class _MainNavigationViewState extends State<MainNavigationView> {
         },
       ),
       const HistoryTab(),
-      const MapTab(),
+      IzinView(
+        isTab: true,
+        onSuccess: () {
+          setState(() {
+            _currentIndex = 1;
+          });
+        },
+      ),
+      const StatistikView(
+        history: [], // StatistikView fetches its own data from API
+      ),
       ProfileTab(
         user: _user,
         onProfileUpdated: _loadUserProfile,
       ),
-      const SettingsTab(),
     ];
 
     return Scaffold(
@@ -88,52 +97,46 @@ class _MainNavigationViewState extends State<MainNavigationView> {
         index: _currentIndex,
         children: tabs,
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: borderColor,
-              width: 1,
-            ),
+      bottomNavigationBar: CurvedNavigationBar(
+        index: _currentIndex,
+        height: 65.0,
+        color: navBgColor,
+        buttonBackgroundColor: const Color(0xFF2E66FF),
+        backgroundColor: bgColor,
+        animationCurve: Curves.easeInOut,
+        animationDuration: const Duration(milliseconds: 400),
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: [
+          Icon(
+            Icons.home_rounded,
+            size: 26,
+            color: _currentIndex == 0 ? Colors.white : unselectedColor,
           ),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          backgroundColor: navBgColor,
-          selectedItemColor: const Color(0xFF2E66FF),
-          unselectedItemColor: unselectedColor,
-          type: BottomNavigationBarType.fixed,
-          selectedFontSize: 11,
-          unselectedFontSize: 11,
-          elevation: 8,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_filled),
-              label: 'Beranda',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.history_rounded),
-              label: 'Riwayat',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.map_outlined),
-              label: 'Peta',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline_rounded),
-              label: 'Profil',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              label: 'Lainnya',
-            ),
-          ],
-        ),
+          Icon(
+            Icons.history_rounded,
+            size: 26,
+            color: _currentIndex == 1 ? Colors.white : unselectedColor,
+          ),
+          Icon(
+            Icons.event_note_rounded,
+            size: 26,
+            color: _currentIndex == 2 ? Colors.white : unselectedColor,
+          ),
+          Icon(
+            Icons.bar_chart_rounded,
+            size: 26,
+            color: _currentIndex == 3 ? Colors.white : unselectedColor,
+          ),
+          Icon(
+            Icons.person_rounded,
+            size: 26,
+            color: _currentIndex == 4 ? Colors.white : unselectedColor,
+          ),
+        ],
       ),
     );
   }

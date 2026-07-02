@@ -4,7 +4,6 @@ import 'package:lottie/lottie.dart';
 import 'package:presgo_app/models/attendance_model.dart';
 import 'package:presgo_app/services/api_service.dart';
 import 'package:presgo_app/views/detail_riwayat_view.dart';
-import 'package:presgo_app/views/statistik_view.dart';
 
 class HistoryTab extends StatefulWidget {
   const HistoryTab({super.key});
@@ -83,12 +82,10 @@ class _HistoryTabState extends State<HistoryTab> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final Color bg = isDark ? const Color(0xFF080C24) : const Color(0xFFF4F7FC);
     final Color textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final Color subText = isDark
-        ? const Color(0xFF90A3BF)
-        : const Color(0xFF64748B);
+    final Color subText = isDark ? const Color(0xFF90A3BF) : const Color(0xFF64748B);
     final Color divider = isDark
-        ? Colors.white.withValues(alpha: 0.06)
-        : Colors.grey.withValues(alpha: 0.15);
+        ? Colors.white.withOpacity(0.06)
+        : Colors.grey.withOpacity(0.15);
 
     final monthLabel = _selectedMonth != null
         ? DateFormat('MMMM yyyy', 'id_ID').format(_selectedMonth!)
@@ -117,8 +114,8 @@ class _HistoryTabState extends State<HistoryTab> {
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: isDark
-                            ? const Color(0xFF2E66FF).withValues(alpha: 0.3)
-                            : Colors.grey.withValues(alpha: 0.2),
+                            ? const Color(0xFF2E66FF).withOpacity(0.3)
+                            : Colors.grey.withOpacity(0.2),
                       ),
                     ),
                     child: Row(
@@ -142,47 +139,24 @@ class _HistoryTabState extends State<HistoryTab> {
                   ),
                 ),
 
-                // Statistics button
+                // Refresh Button
                 GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => StatistikView(
-                          history: _history,
-                          selectedMonth: _selectedMonth,
-                        ),
-                      ),
-                    );
-                  },
+                  onTap: _fetchHistory,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF2E66FF), Color(0xFF8F30FF)],
-                      ),
+                      color: isDark ? const Color(0xFF131738) : Colors.white,
                       borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF2E66FF).withOpacity(0.3)
+                            : Colors.grey.withOpacity(0.2),
+                      ),
                     ),
-                    child: const Row(
-                      children: [
-                        Icon(
-                          Icons.bar_chart_rounded,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          'Statistik',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
+                    child: const Icon(
+                      Icons.refresh_rounded,
+                      color: Color(0xFF2E66FF),
+                      size: 20,
                     ),
                   ),
                 ),
@@ -190,7 +164,7 @@ class _HistoryTabState extends State<HistoryTab> {
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
           // ── Title ──
           Padding(
@@ -227,14 +201,14 @@ class _HistoryTabState extends State<HistoryTab> {
                   ? ListView(
                       children: [
                         SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.2,
+                          height: MediaQuery.of(context).size.height * 0.15,
                         ),
                         Center(
                           child: Column(
                             children: [
                               SizedBox(
-                                width: 250,
-                                height: 250,
+                                width: 200,
+                                height: 200,
                                 child: Lottie.asset(
                                   'assets/animations/loadingpres.json',
                                   fit: BoxFit.contain,
@@ -249,10 +223,10 @@ class _HistoryTabState extends State<HistoryTab> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'Tidak ada riwayat',
+                                'Tidak ada riwayat absensi',
                                 style: TextStyle(
                                   color: subText,
-                                  fontSize: 15,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -313,7 +287,7 @@ class _HistoryTabState extends State<HistoryTab> {
                 letterSpacing: 0.2,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             ...items.map(
               (item) => _buildItemCard(
                 item,
@@ -341,10 +315,14 @@ class _HistoryTabState extends State<HistoryTab> {
 
     String statusText = 'Tepat Waktu';
     Color statusColor = const Color(0xFF10B981);
+    IconData statusIcon = Icons.check_circle_rounded;
+    List<Color> gradientColors = [const Color(0xFF10B981), const Color(0xFF059669)];
 
     if (item.status == 'izin') {
       statusText = 'Izin';
-      statusColor = const Color(0xFF3B82F6);
+      statusColor = const Color(0xFF8F30FF);
+      statusIcon = Icons.assignment_rounded;
+      gradientColors = [const Color(0xFF8F30FF), const Color(0xFF6D28D9)];
     } else if (item.checkInTime != null) {
       try {
         final parts = item.checkInTime!.split(':');
@@ -353,128 +331,139 @@ class _HistoryTabState extends State<HistoryTab> {
         if (hour > 8 || (hour == 8 && minute > 0)) {
           statusText = 'Terlambat';
           statusColor = const Color(0xFFF59E0B);
+          statusIcon = Icons.alarm_rounded;
+          gradientColors = [const Color(0xFFF59E0B), const Color(0xFFD97706)];
         }
       } catch (_) {}
     }
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => DetailRiwayatView(
-              attendance: item,
-              onDeleteSuccess: _fetchHistory,
-            ),
-          ),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 2),
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: dividerColor, width: 1)),
-        ),
-        child: Row(
-          children: [
-            // Masuk column
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF10B981),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        inTime,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: textColor,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 14),
-                    child: Text(
-                      'Masuk',
-                      style: TextStyle(color: subText, fontSize: 11),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+    final cardColor = isDark ? const Color(0xFF131738) : Colors.white;
+    final borderColor = isDark ? const Color(0xFF2E66FF).withOpacity(0.12) : Colors.grey.withOpacity(0.15);
 
-            // Pulang column
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFEF4444),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        outTime,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: textColor,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 14),
-                    child: Text(
-                      'Pulang',
-                      style: TextStyle(color: subText, fontSize: 11),
-                    ),
-                  ),
-                ],
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.15 : 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => DetailRiwayatView(
+                  attendance: item,
+                  onDeleteSuccess: _fetchHistory,
+                ),
               ),
-            ),
-
-            // Status + arrow
-            Row(
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
               children: [
-                Text(
-                  statusText,
-                  style: TextStyle(
-                    color: statusColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                // Icon with gradient background
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: gradientColors,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    statusIcon,
+                    color: Colors.white,
+                    size: 22,
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 16),
+
+                // Check-in and Check-out details
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Masuk',
+                              style: TextStyle(color: subText, fontSize: 10, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              inTime,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: textColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Pulang',
+                              style: TextStyle(color: subText, fontSize: 10, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              outTime,
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                  color: textColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Status Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          statusText,
+                          style: TextStyle(
+                            color: statusColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
                 Icon(
-                  Icons.chevron_right_rounded,
-                  color: subText.withValues(alpha: 0.5),
-                  size: 18,
+                  Icons.arrow_forward_ios_rounded,
+                  color: subText.withOpacity(0.4),
+                  size: 13,
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -501,7 +490,7 @@ class _HistoryTabState extends State<HistoryTab> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: subText.withValues(alpha: 0.3),
+                color: subText.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

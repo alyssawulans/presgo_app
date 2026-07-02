@@ -6,8 +6,9 @@ import 'package:presgo_app/views/custom_error_dialog.dart';
 
 class IzinView extends StatefulWidget {
   final VoidCallback onSuccess;
+  final bool isTab;
 
-  const IzinView({super.key, required this.onSuccess});
+  const IzinView({super.key, required this.onSuccess, this.isTab = false});
 
   @override
   State<IzinView> createState() => _IzinViewState();
@@ -127,7 +128,9 @@ class _IzinViewState extends State<IzinView> with SingleTickerProviderStateMixin
 
       if (mounted) {
         widget.onSuccess();
-        Navigator.pop(context);
+        if (!widget.isTab) {
+          Navigator.pop(context);
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Row(
@@ -176,10 +179,11 @@ class _IzinViewState extends State<IzinView> with SingleTickerProviderStateMixin
               padding: const EdgeInsets.fromLTRB(4, 8, 16, 8),
               child: Row(
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor, size: 20),
-                    onPressed: () => Navigator.pop(context),
-                  ),
+                  if (!widget.isTab)
+                    IconButton(
+                      icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor, size: 20),
+                      onPressed: () => Navigator.pop(context),
+                    ),
                   Expanded(
                     child: Text(
                       'Ajukan Izin',
@@ -191,7 +195,7 @@ class _IzinViewState extends State<IzinView> with SingleTickerProviderStateMixin
                       ),
                     ),
                   ),
-                  const SizedBox(width: 48),
+                  if (!widget.isTab) const SizedBox(width: 48),
                 ],
               ),
             ),
