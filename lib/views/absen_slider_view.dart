@@ -203,11 +203,20 @@ class _AbsenSliderViewState extends State<AbsenSliderView> with TickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final title = widget.isCheckIn ? 'Absen Masuk' : 'Absen Pulang';
     final accentColor = widget.isCheckIn ? const Color(0xFF10B981) : const Color(0xFFEF4444);
     final gradientColors = widget.isCheckIn
         ? [const Color(0xFF10B981), const Color(0xFF059669)]
         : [const Color(0xFFEF4444), const Color(0xFFDC2626)];
+
+    final Color bg = isDark ? const Color(0xFF080C24) : const Color(0xFFF4F7FC);
+    final Color cardBg = isDark ? const Color(0xFF131738) : Colors.white;
+    final Color textColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final Color subText = isDark ? const Color(0xFF90A3BF) : const Color(0xFF64748B);
+    final Color borderColor = isDark
+        ? const Color(0xFF2E66FF).withValues(alpha: 0.15)
+        : Colors.grey.withValues(alpha: 0.2);
 
     LatLng initialPos = const LatLng(-6.200000, 106.816666);
     if (_location != null) {
@@ -215,15 +224,17 @@ class _AbsenSliderViewState extends State<AbsenSliderView> with TickerProviderSt
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF080C24),
+      backgroundColor: bg,
       body: Stack(
         children: [
           // ── Gradient Background ──
           Positioned.fill(
             child: Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF0A0E2E), Color(0xFF080C24)],
+                  colors: isDark
+                      ? [const Color(0xFF0A0E2E), const Color(0xFF080C24)]
+                      : [Colors.white, const Color(0xFFF4F7FC)],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -242,13 +253,13 @@ class _AbsenSliderViewState extends State<AbsenSliderView> with TickerProviderSt
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+                        icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor, size: 20),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                       Text(
                         title,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: textColor,
                           fontWeight: FontWeight.w900,
                           fontSize: 18,
                           letterSpacing: -0.5,
@@ -268,10 +279,14 @@ class _AbsenSliderViewState extends State<AbsenSliderView> with TickerProviderSt
                     margin: const EdgeInsets.fromLTRB(20, 4, 20, 20),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.08)
+                            : Colors.black.withValues(alpha: 0.08),
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.4),
+                          color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.05),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -290,7 +305,10 @@ class _AbsenSliderViewState extends State<AbsenSliderView> with TickerProviderSt
                                       const SizedBox(height: 16),
                                       Text(
                                         'Mengunci Posisi GPS...',
-                                        style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 13),
+                                        style: TextStyle(
+                                          color: textColor.withValues(alpha: 0.6),
+                                          fontSize: 13,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -299,7 +317,11 @@ class _AbsenSliderViewState extends State<AbsenSliderView> with TickerProviderSt
                                   initialCameraPosition: CameraPosition(target: initialPos, zoom: 17.0),
                                   onMapCreated: (controller) {
                                     _mapController = controller;
-                                    _mapController!.setMapStyle(_darkStyle);
+                                    if (isDark) {
+                                      _mapController!.setMapStyle(_darkStyle);
+                                    } else {
+                                      _mapController!.setMapStyle(null);
+                                    }
                                   },
                                   markers: _location != null
                                       ? {
@@ -325,9 +347,9 @@ class _AbsenSliderViewState extends State<AbsenSliderView> with TickerProviderSt
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF080C24).withValues(alpha: 0.85),
+                                color: cardBg.withValues(alpha: 0.85),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                                border: Border.all(color: borderColor),
                               ),
                               child: Row(
                                 children: [
@@ -342,8 +364,8 @@ class _AbsenSliderViewState extends State<AbsenSliderView> with TickerProviderSt
                                   const SizedBox(width: 8),
                                   Text(
                                     widget.isCheckIn ? 'Zona Absen Masuk' : 'Zona Absen Pulang',
-                                    style: const TextStyle(
-                                      color: Colors.white,
+                                    style: TextStyle(
+                                      color: textColor,
                                       fontSize: 11,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -362,14 +384,14 @@ class _AbsenSliderViewState extends State<AbsenSliderView> with TickerProviderSt
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0D1133),
+                    color: cardBg,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(36),
                       topRight: Radius.circular(36),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.3),
+                        color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
                         blurRadius: 20,
                         offset: const Offset(0, -10),
                       ),
@@ -406,8 +428,8 @@ class _AbsenSliderViewState extends State<AbsenSliderView> with TickerProviderSt
                           if (_location != null)
                             Text(
                               'Akurasi: ±${_location!.accuracy.toStringAsFixed(1)}m',
-                              style: const TextStyle(
-                                color: Color(0xFF707B93),
+                              style: TextStyle(
+                                color: subText,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -418,10 +440,10 @@ class _AbsenSliderViewState extends State<AbsenSliderView> with TickerProviderSt
                       const SizedBox(height: 16),
 
                       // Location Title
-                      const Text(
+                      Text(
                         'Lokasi Presensi Anda',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: textColor,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
@@ -433,9 +455,9 @@ class _AbsenSliderViewState extends State<AbsenSliderView> with TickerProviderSt
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF080C24).withValues(alpha: 0.5),
+                          color: bg.withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                          border: Border.all(color: borderColor),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -445,8 +467,8 @@ class _AbsenSliderViewState extends State<AbsenSliderView> with TickerProviderSt
                             Expanded(
                               child: Text(
                                 _location?.address ?? 'Mencari lokasi presensi...',
-                                style: const TextStyle(
-                                  color: Color(0xFF90A3BF),
+                                style: TextStyle(
+                                  color: subText,
                                   fontSize: 12,
                                   height: 1.5,
                                   fontWeight: FontWeight.w500,
@@ -471,7 +493,7 @@ class _AbsenSliderViewState extends State<AbsenSliderView> with TickerProviderSt
                             height: 60,
                             width: double.infinity,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF080C24),
+                              color: bg,
                               borderRadius: BorderRadius.circular(30),
                               border: Border.all(
                                 color: accentColor.withValues(alpha: 0.15 + (progress * 0.35)),
@@ -512,9 +534,7 @@ class _AbsenSliderViewState extends State<AbsenSliderView> with TickerProviderSt
                                           ? 'Geser ke kanan untuk Masuk'
                                           : 'Geser ke kanan untuk Pulang',
                                       style: TextStyle(
-                                        color: isDarkTheme(context)
-                                            ? const Color(0xFF90A3BF)
-                                            : Colors.white,
+                                        color: subText,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w800,
                                         letterSpacing: 0.3,

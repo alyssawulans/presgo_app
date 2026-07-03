@@ -82,7 +82,9 @@ class _HistoryTabState extends State<HistoryTab> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final Color bg = isDark ? const Color(0xFF080C24) : const Color(0xFFF4F7FC);
     final Color textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final Color subText = isDark ? const Color(0xFF90A3BF) : const Color(0xFF64748B);
+    final Color subText = isDark
+        ? const Color(0xFF90A3BF)
+        : const Color(0xFF64748B);
     final Color divider = isDark
         ? Colors.white.withOpacity(0.06)
         : Colors.grey.withOpacity(0.15);
@@ -207,8 +209,8 @@ class _HistoryTabState extends State<HistoryTab> {
                           child: Column(
                             children: [
                               SizedBox(
-                                width: 200,
-                                height: 200,
+                                width: 220,
+                                height: 220,
                                 child: Lottie.asset(
                                   'assets/animations/loadingpres.json',
                                   fit: BoxFit.contain,
@@ -316,7 +318,10 @@ class _HistoryTabState extends State<HistoryTab> {
     String statusText = 'Tepat Waktu';
     Color statusColor = const Color(0xFF10B981);
     IconData statusIcon = Icons.check_circle_rounded;
-    List<Color> gradientColors = [const Color(0xFF10B981), const Color(0xFF059669)];
+    List<Color> gradientColors = [
+      const Color(0xFF10B981),
+      const Color(0xFF059669),
+    ];
 
     if (item.status == 'izin') {
       statusText = 'Izin';
@@ -338,7 +343,9 @@ class _HistoryTabState extends State<HistoryTab> {
     }
 
     final cardColor = isDark ? const Color(0xFF131738) : Colors.white;
-    final borderColor = isDark ? const Color(0xFF2E66FF).withOpacity(0.12) : Colors.grey.withOpacity(0.15);
+    final borderColor = isDark
+        ? const Color(0xFF2E66FF).withOpacity(0.12)
+        : Colors.grey.withOpacity(0.15);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -351,7 +358,7 @@ class _HistoryTabState extends State<HistoryTab> {
             color: Colors.black.withOpacity(isDark ? 0.15 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Material(
@@ -384,11 +391,7 @@ class _HistoryTabState extends State<HistoryTab> {
                     ),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(
-                    statusIcon,
-                    color: Colors.white,
-                    size: 22,
-                  ),
+                  child: Icon(statusIcon, color: Colors.white, size: 22),
                 ),
                 const SizedBox(width: 16),
 
@@ -402,7 +405,11 @@ class _HistoryTabState extends State<HistoryTab> {
                           children: [
                             Text(
                               'Masuk',
-                              style: TextStyle(color: subText, fontSize: 10, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: subText,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 2),
                             Text(
@@ -422,15 +429,19 @@ class _HistoryTabState extends State<HistoryTab> {
                           children: [
                             Text(
                               'Pulang',
-                              style: TextStyle(color: subText, fontSize: 10, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: subText,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               outTime,
                               style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w800,
-                                  color: textColor,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: textColor,
                               ),
                             ),
                           ],
@@ -438,7 +449,10 @@ class _HistoryTabState extends State<HistoryTab> {
                       ),
                       // Status Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: statusColor.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(10),
@@ -524,7 +538,10 @@ class _HistoryTabState extends State<HistoryTab> {
                       ),
                     ),
                     trailing: isSelected
-                        ? const Icon(Icons.check_rounded, color: Color(0xFF2E66FF))
+                        ? const Icon(
+                            Icons.check_rounded,
+                            color: Color(0xFF2E66FF),
+                          )
                         : null,
                     onTap: () {
                       setState(() => _selectedMonth = dt);

@@ -164,13 +164,22 @@ class _SplashView1State extends State<SplashView1>
                           color: Colors.white,
                           letterSpacing: 2.0,
                         ),
-                        children: const [
+                        children: [
                           TextSpan(
                             text: 'Presence On The Go',
                             style: TextStyle(
                               fontSize: 25,
                               fontWeight: FontWeight.w900,
-                              color: Color(0xFF8F30FF),
+                              foreground: Paint()
+                                ..shader =
+                                    const LinearGradient(
+                                      colors: [
+                                        Color(0xFF8F30FF),
+                                        Color(0xFF4F8CFF),
+                                      ],
+                                    ).createShader(
+                                      const Rect.fromLTWH(0, 0, 250, 70),
+                                    ),
                             ),
                           ),
                         ],

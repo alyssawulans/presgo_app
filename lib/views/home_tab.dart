@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:presgo_app/models/attendance_model.dart';
 import 'package:presgo_app/models/user_model.dart';
 import 'package:presgo_app/services/api_service.dart';
@@ -275,10 +276,10 @@ class _HomeTabState extends State<HomeTab> {
                       const SizedBox(width: 8),
                       // Mascot Image on the right side
                       SizedBox(
-                        height: 125,
-                        width: 110,
-                        child: Image.asset(
-                          'assets/images/maskot.png',
+                        height: 170,
+                        width: 170,
+                        child: Lottie.asset(
+                          'assets/animations/haimaskot.json',
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) {
                             return const SizedBox.shrink();

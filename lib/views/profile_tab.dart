@@ -30,27 +30,40 @@ class _ProfileTabState extends State<ProfileTab> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: isDark ? const Color(0xFF131738) : Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: Text(
             'Konfirmasi Logout',
-            style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              fontWeight: FontWeight.bold,
+            ),
           ),
           content: Text(
             'Apakah Anda yakin ingin keluar dari aplikasi?',
-            style: TextStyle(color: isDark ? const Color(0xFF90A3BF) : const Color(0xFF64748B)),
+            style: TextStyle(
+              color: isDark ? const Color(0xFF90A3BF) : const Color(0xFF64748B),
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 'Batal',
-                style: TextStyle(color: isDark ? const Color(0xFF90A3BF) : const Color(0xFF64748B)),
+                style: TextStyle(
+                  color: isDark
+                      ? const Color(0xFF90A3BF)
+                      : const Color(0xFF64748B),
+                ),
               ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.redAccent,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               onPressed: () async {
                 Navigator.of(context).pop();
@@ -62,7 +75,13 @@ class _ProfileTabState extends State<ProfileTab> {
                   (route) => false,
                 );
               },
-              child: const Text('Keluar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Keluar',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         );
@@ -75,8 +94,12 @@ class _ProfileTabState extends State<ProfileTab> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final Color cardColor = isDark ? const Color(0xFF131738) : Colors.white;
     final Color textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final Color subTextColor = isDark ? const Color(0xFF90A3BF) : const Color(0xFF64748B);
-    final Color borderColor = isDark ? const Color(0xFF2E66FF).withOpacity(0.15) : Colors.grey.withOpacity(0.2);
+    final Color subTextColor = isDark
+        ? const Color(0xFF90A3BF)
+        : const Color(0xFF64748B);
+    final Color borderColor = isDark
+        ? const Color(0xFF2E66FF).withOpacity(0.15)
+        : Colors.grey.withOpacity(0.2);
 
     String joinedDate = '---';
     if (widget.user?.createdAt != null) {
@@ -119,7 +142,7 @@ class _ProfileTabState extends State<ProfileTab> {
                         color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
                         blurRadius: 15,
                         offset: const Offset(0, 8),
-                      )
+                      ),
                     ],
                   ),
                   child: Column(
@@ -132,25 +155,38 @@ class _ProfileTabState extends State<ProfileTab> {
                             height: 100,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: const Color(0xFF2E66FF), width: 3),
+                              border: Border.all(
+                                color: const Color(0xFF2E66FF),
+                                width: 3,
+                              ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF2E66FF).withOpacity(0.2),
+                                  color: const Color(
+                                    0xFF2E66FF,
+                                  ).withOpacity(0.2),
                                   blurRadius: 10,
                                   spreadRadius: 2,
-                                )
+                                ),
                               ],
                             ),
                             child: ClipOval(
-                              child: _getSanitizedImageUrl(widget.user?.profilePhoto) != null
+                              child:
+                                  _getSanitizedImageUrl(
+                                        widget.user?.profilePhoto,
+                                      ) !=
+                                      null
                                   ? Image.network(
                                       "${_getSanitizedImageUrl(widget.user!.profilePhoto!)}?v=${DateTime.now().millisecondsSinceEpoch}",
                                       fit: BoxFit.cover,
                                     )
                                   : Container(
-                                      color: isDark ? const Color(0xFF080C24) : Colors.grey.shade100,
+                                      color: isDark
+                                          ? const Color(0xFF080C24)
+                                          : Colors.grey.shade100,
                                       child: Icon(
-                                        isMale ? Icons.face_rounded : Icons.face_3_rounded,
+                                        isMale
+                                            ? Icons.face_rounded
+                                            : Icons.face_3_rounded,
                                         size: 64,
                                         color: const Color(0xFF2E66FF),
                                       ),
@@ -183,14 +219,14 @@ class _ProfileTabState extends State<ProfileTab> {
                       const SizedBox(height: 6),
                       Text(
                         widget.user?.email ?? '---',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: subTextColor,
-                        ),
+                        style: TextStyle(fontSize: 13, color: subTextColor),
                       ),
                       const SizedBox(height: 12),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF10B981).withOpacity(0.15),
                           borderRadius: BorderRadius.circular(12),
@@ -198,7 +234,11 @@ class _ProfileTabState extends State<ProfileTab> {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.verified_user_rounded, color: Color(0xFF10B981), size: 14),
+                            Icon(
+                              Icons.verified_user_rounded,
+                              color: Color(0xFF10B981),
+                              size: 14,
+                            ),
                             SizedBox(width: 6),
                             Text(
                               'Verified Student',
@@ -215,7 +255,7 @@ class _ProfileTabState extends State<ProfileTab> {
                   ),
                 ),
                 const SizedBox(height: 24),
-      
+
                 // Details List Card
                 Container(
                   width: double.infinity,
@@ -237,20 +277,47 @@ class _ProfileTabState extends State<ProfileTab> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      _buildInfoRow('Nama Lengkap', widget.user?.name ?? '---', textColor, subTextColor),
+                      _buildInfoRow(
+                        'Nama Lengkap',
+                        widget.user?.name ?? '---',
+                        textColor,
+                        subTextColor,
+                      ),
                       _buildDivider(borderColor),
-                      _buildInfoRow('Email', widget.user?.email ?? '---', textColor, subTextColor),
+                      _buildInfoRow(
+                        'Email',
+                        widget.user?.email ?? '---',
+                        textColor,
+                        subTextColor,
+                      ),
                       _buildDivider(borderColor),
-                      _buildInfoRow('Batch', widget.user?.batchName ?? 'Batch ${widget.user?.batchId ?? "---"}', textColor, subTextColor),
+                      _buildInfoRow(
+                        'Batch',
+                        widget.user?.batchName ??
+                            'Batch ${widget.user?.batchId ?? "---"}',
+                        textColor,
+                        subTextColor,
+                      ),
                       _buildDivider(borderColor),
-                      _buildInfoRow('Training', widget.user?.trainingName ?? 'Training ${widget.user?.trainingId ?? "---"}', textColor, subTextColor),
+                      _buildInfoRow(
+                        'Training',
+                        widget.user?.trainingName ??
+                            'Training ${widget.user?.trainingId ?? "---"}',
+                        textColor,
+                        subTextColor,
+                      ),
                       _buildDivider(borderColor),
-                      _buildInfoRow('Bergabung Sejak', joinedDate, textColor, subTextColor),
+                      _buildInfoRow(
+                        'Bergabung Sejak',
+                        joinedDate,
+                        textColor,
+                        subTextColor,
+                      ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 20),
-      
+
                 // Edit Profile Button
                 Container(
                   width: double.infinity,
@@ -272,7 +339,8 @@ class _ProfileTabState extends State<ProfileTab> {
                           final updated = await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => EditProfileView(user: widget.user!),
+                              builder: (context) =>
+                                  EditProfileView(user: widget.user!),
                             ),
                           );
                           if (updated == true) {
@@ -310,7 +378,11 @@ class _ProfileTabState extends State<ProfileTab> {
                 // Preferensi Section
                 Text(
                   'Preferensi',
-                  style: TextStyle(color: subTextColor, fontSize: 12, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: subTextColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -354,7 +426,11 @@ class _ProfileTabState extends State<ProfileTab> {
                 // Akun Section
                 Text(
                   'Akun',
-                  style: TextStyle(color: subTextColor, fontSize: 12, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: subTextColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -372,7 +448,11 @@ class _ProfileTabState extends State<ProfileTab> {
                         subTextColor: subTextColor,
                         onTap: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Fitur Ubah Password dalam pengembangan.')),
+                            const SnackBar(
+                              content: Text(
+                                'Fitur Ubah Password dalam pengembangan.',
+                              ),
+                            ),
                           );
                         },
                       ),
@@ -384,7 +464,11 @@ class _ProfileTabState extends State<ProfileTab> {
                         subTextColor: subTextColor,
                         onTap: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Fitur Keamanan dalam pengembangan.')),
+                            const SnackBar(
+                              content: Text(
+                                'Fitur Keamanan dalam pengembangan.',
+                              ),
+                            ),
                           );
                         },
                       ),
@@ -396,7 +480,11 @@ class _ProfileTabState extends State<ProfileTab> {
                 // Lainnya Section
                 Text(
                   'Lainnya',
-                  style: TextStyle(color: subTextColor, fontSize: 12, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: subTextColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -414,7 +502,11 @@ class _ProfileTabState extends State<ProfileTab> {
                         subTextColor: subTextColor,
                         onTap: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Fitur Bantuan dalam pengembangan.')),
+                            const SnackBar(
+                              content: Text(
+                                'Fitur Bantuan dalam pengembangan.',
+                              ),
+                            ),
                           );
                         },
                       ),
@@ -429,9 +521,13 @@ class _ProfileTabState extends State<ProfileTab> {
                             context: context,
                             applicationName: 'PresGo Absensi',
                             applicationVersion: '1.0.0',
-                            applicationIcon: const Icon(Icons.fingerprint_rounded, color: Color(0xFF2E66FF), size: 48),
+                            applicationIcon: const Icon(
+                              Icons.fingerprint_rounded,
+                              color: Color(0xFF2E66FF),
+                              size: 48,
+                            ),
                             children: const [
-                              Text('Aplikasi Presensi Pegawai & Peserta PPKD Jakarta Barat.'),
+                              Text('Aplikasi Presensi Pegawai & Peserta.'),
                             ],
                           );
                         },
@@ -448,7 +544,9 @@ class _ProfileTabState extends State<ProfileTab> {
                   decoration: BoxDecoration(
                     color: Colors.redAccent.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
+                    border: Border.all(
+                      color: Colors.redAccent.withOpacity(0.3),
+                    ),
                   ),
                   child: Material(
                     color: Colors.transparent,
@@ -458,7 +556,11 @@ class _ProfileTabState extends State<ProfileTab> {
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.logout_rounded, color: Colors.redAccent, size: 20),
+                          Icon(
+                            Icons.logout_rounded,
+                            color: Colors.redAccent,
+                            size: 20,
+                          ),
                           SizedBox(width: 10),
                           Text(
                             'Logout',
@@ -482,19 +584,18 @@ class _ProfileTabState extends State<ProfileTab> {
     );
   }
 
-  Widget _buildInfoRow(String label, String value, Color textColor, Color subTextColor) {
+  Widget _buildInfoRow(
+    String label,
+    String value,
+    Color textColor,
+    Color subTextColor,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              color: subTextColor,
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 13, color: subTextColor)),
           const SizedBox(width: 20),
           Expanded(
             child: Text(
@@ -515,9 +616,18 @@ class _ProfileTabState extends State<ProfileTab> {
   String? _getSanitizedImageUrl(String? url) {
     if (url == null || url.isEmpty) return null;
     String cleaned = url;
-    cleaned = cleaned.replaceAll('http://127.0.0.1:8000', 'https://appabsensi.mobileprojp.com');
-    cleaned = cleaned.replaceAll('http://localhost:8000', 'https://appabsensi.mobileprojp.com');
-    cleaned = cleaned.replaceAll('http://localhost', 'https://appabsensi.mobileprojp.com');
+    cleaned = cleaned.replaceAll(
+      'http://127.0.0.1:8000',
+      'https://appabsensi.mobileprojp.com',
+    );
+    cleaned = cleaned.replaceAll(
+      'http://localhost:8000',
+      'https://appabsensi.mobileprojp.com',
+    );
+    cleaned = cleaned.replaceAll(
+      'http://localhost',
+      'https://appabsensi.mobileprojp.com',
+    );
 
     if (!cleaned.startsWith('http://') && !cleaned.startsWith('https://')) {
       if (cleaned.startsWith('/')) {
@@ -530,11 +640,7 @@ class _ProfileTabState extends State<ProfileTab> {
   }
 
   Widget _buildDivider(Color borderColor) {
-    return Divider(
-      color: borderColor,
-      height: 24,
-      thickness: 1,
-    );
+    return Divider(color: borderColor, height: 24, thickness: 1);
   }
 
   Widget _buildSettingsTile({
@@ -546,8 +652,19 @@ class _ProfileTabState extends State<ProfileTab> {
   }) {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFF2E66FF), size: 22),
-      title: Text(title, style: TextStyle(color: textColor, fontSize: 13, fontWeight: FontWeight.w600)),
-      trailing: Icon(Icons.arrow_forward_ios_rounded, color: subTextColor, size: 13),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      trailing: Icon(
+        Icons.arrow_forward_ios_rounded,
+        color: subTextColor,
+        size: 13,
+      ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       onTap: onTap,
     );
@@ -564,14 +681,25 @@ class _ProfileTabState extends State<ProfileTab> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListTile(
       leading: Icon(icon, color: const Color(0xFF2E66FF), size: 22),
-      title: Text(title, style: TextStyle(color: textColor, fontSize: 13, fontWeight: FontWeight.w600)),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
       trailing: Switch(
         value: value,
         onChanged: onChanged,
         activeColor: const Color(0xFF2E66FF),
         activeTrackColor: const Color(0xFF2E66FF).withOpacity(0.3),
-        inactiveThumbColor: isDark ? const Color(0xFF90A3BF) : Colors.grey.shade400,
-        inactiveTrackColor: isDark ? const Color(0xFF1E244C) : Colors.grey.shade200,
+        inactiveThumbColor: isDark
+            ? const Color(0xFF90A3BF)
+            : Colors.grey.shade400,
+        inactiveTrackColor: isDark
+            ? const Color(0xFF1E244C)
+            : Colors.grey.shade200,
       ),
     );
   }
