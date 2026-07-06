@@ -66,5 +66,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Aplikasi memerlukan akses lokasi untuk mendeteksi koordinat presensi/absensi Anda.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Aplikasi memerlukan akses lokasi untuk mendeteksi koordinat presensi/absensi Anda.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Aplikasi memerlukan akses lokasi untuk mendeteksi koordinat presensi/absensi Anda.</string>
 </dict>
 </plist>
